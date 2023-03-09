@@ -1,4 +1,5 @@
 #pragma once
+#include <stdio.h>
 //#include "libOutils.h"
 
 /* librairie IPSI1 */
