@@ -1543,16 +1543,22 @@ IMAGE imageSortieRegression(IMAGE img, char axe)
 	return result;
 }
 
-IMAGE IoU(IMAGE i1, IMAGE i2, float *result){
-    IMAGE xor = allocationImage(i1.Nblig, i1.Nbcol);
-    unsigned int I = 0, U = 0;
+IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
+    IMAGE diff = allocationImage(i1.Nblig, i1.Nbcol);	// Image de differenciation
+    unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
     for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++){
-        xor.data[i] = i1.data[i] == i2.data[i] ? 1 : 0;
-        if((i1.data[i] != 0) || (i2.data[i] != 0))
-            U++;
+        
+		if (i1.data[i] == i2.data[i])		// pixels identiques -> 0 dans diff
+			diff.data[i] = 0;
+		else								// pixels differents -> 1 dans diff
+			diff.data[i] = 255;
+        
+		if((i1.data[i] != 0) || (i2.data[i] != 0))
+            uni++;										// Si une des images a un defaut
         if((i1.data[i] != 0) && (i2.data[i] != 0))
-            I++;
+            intersect++;								// Si les deux images ont un defaut
     }
-    *result = I/U;
-    return xor;
+    *IoU = (float)intersect/uni;
+	*GlobalDelta = 1 - ((float)(uni - intersect) / (diff.Nblig * diff.Nbcol));
+    return diff;
 }

@@ -125,4 +125,6 @@ int** rechercheTrou(SIGNATURE_COMPOSANTE_CONNEXE* signObjet, SIGNATURE_COMPOSANT
 
 void discriminationTrous(IMAGE img, IMAGE* res, int** configTrous, int NbObjets, int* NbGroups);
 
-IMAGE IoU(IMAGE i1, IMAGE i2, float *result);
+// Fonction de notation de resultat
+// retourne une image avec les différences et 2 mesures de ressemblance (une locale, une globale)
+IMAGE IoU(IMAGE i1, IMAGE i2, float* IoU, float* GlobalDelta);
