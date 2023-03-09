@@ -1,5 +1,5 @@
-// libCIPSI1.c 
-// Hubert Konik - filière IPSI
+// libCIPSI1.cï¿½
+// Hubert Konik - filiï¿½re IPSI
 
 #pragma once
 #include <stdlib.h>
@@ -34,7 +34,7 @@ static intIMAGE allocationIntImage(int Nblig, int Nbcol)
 
 	mat.Nblig = Nblig;
 	mat.Nbcol = Nbcol;
-	mat.data = (int*)calloc(Nblig*Nbcol, sizeof(int)); /* mise à 0 par défaut, gestion des bords lors de l'agrandissement opéré dans l'étiquetage */
+	mat.data = (int*)calloc(Nblig*Nbcol, sizeof(int)); /* mise ï¿½ 0 par dï¿½faut, gestion des bords lors de l'agrandissement opï¿½rï¿½ dans l'ï¿½tiquetage */
 	if (mat.data == NULL)
 		return(mat);
 	mat.pixel = (int**)malloc(Nblig*sizeof(int*));
@@ -61,7 +61,7 @@ static void liberationIntImage(intIMAGE *img)
 	}
 }
 
-/* fonctionnalités -> exportables */
+/* fonctionnalitï¿½s -> exportables */
 
 IMAGE allocationImage(int Nblig, int Nbcol)
 {
@@ -135,26 +135,26 @@ IMAGE lectureImage(const char *in)
 
 			F = fopen(in, "r");
 
-			/* lecture caractère après caractère compte-tenu de la diversité des entêtes possibles */
+			/* lecture caractï¿½re aprï¿½s caractï¿½re compte-tenu de la diversitï¿½ des entï¿½tes possibles */
 			fscanf(F, "%c", &type[0]);
 			fscanf(F, "%c", &type[1]);
-			fscanf(F, "%c", &buf); /* caractère espacement */
+			fscanf(F, "%c", &buf); /* caractï¿½re espacement */
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
 			}
-			while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilité d'utiliser également isdigit de la librairie standard <ctype.h> */
+			while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilitï¿½ d'utiliser ï¿½galement isdigit de la librairie standard <ctype.h> */
 				img.Nbcol = img.Nbcol * 10 + (buf - '0');
 				fscanf(F, "%c", &buf);
 			}
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
@@ -166,7 +166,7 @@ IMAGE lectureImage(const char *in)
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
@@ -176,7 +176,7 @@ IMAGE lectureImage(const char *in)
 				fscanf(F, "%c", &buf);
 			}
 
-			/* début des data */
+			/* dï¿½but des data */
 
 			printf("Lecture image NG type %s avec %d lignes et %d colonnes...\n", type, img.Nblig, img.Nbcol);
 
@@ -203,26 +203,26 @@ IMAGE lectureImage(const char *in)
 
 				F = fopen(in, "rb");
 
-				/* lecture caractère après caractère compte-tenu de la diversité des entêtes possibles */
+				/* lecture caractï¿½re aprï¿½s caractï¿½re compte-tenu de la diversitï¿½ des entï¿½tes possibles */
 				type[0] = fgetc(F);
 				type[1] = fgetc(F);
-				buf = fgetc(F); /* caractère espacement */
+				buf = fgetc(F); /* caractï¿½re espacement */
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
 				}
-				while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilité d'utiliser également isdigit de la librairie standard <ctype.h> */
+				while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilitï¿½ d'utiliser ï¿½galement isdigit de la librairie standard <ctype.h> */
 					img.Nbcol = img.Nbcol * 10 + (buf - '0');
 					buf = fgetc(F);
 				}
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
@@ -234,7 +234,7 @@ IMAGE lectureImage(const char *in)
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
@@ -244,7 +244,7 @@ IMAGE lectureImage(const char *in)
 					buf = fgetc(F);
 				}
 
-				/* début des data */
+				/* dï¿½but des data */
 
 				printf("Lecture image NG type %s avec %d lignes et %d colonnes...\n", type, img.Nblig, img.Nbcol);
 
@@ -364,26 +364,26 @@ IMAGERGB lectureImageRGB(const char *in)
 
 			F = fopen(in, "r");
 
-			/* lecture caractère après caractère compte-tenu de la diversité des entêtes possibles */
+			/* lecture caractï¿½re aprï¿½s caractï¿½re compte-tenu de la diversitï¿½ des entï¿½tes possibles */
 			fscanf(F, "%c", &type[0]);
 			fscanf(F, "%c", &type[1]);
-			fscanf(F, "%c", &buf); /* caractère espacement */
+			fscanf(F, "%c", &buf); /* caractï¿½re espacement */
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
 			}
-			while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilité d'utiliser également isdigit de la librairie standard <ctype.h> */
+			while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilitï¿½ d'utiliser ï¿½galement isdigit de la librairie standard <ctype.h> */
 				img.Nbcol = img.Nbcol * 10 + (buf - '0');
 				fscanf(F, "%c", &buf);
 			}
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
@@ -395,7 +395,7 @@ IMAGERGB lectureImageRGB(const char *in)
 
 			fscanf(F, "%c", &buf);
 			if (buf == '#') {
-				/* on ignore tout jusqu'à trouver '\n' */
+				/* on ignore tout jusqu'ï¿½ trouver '\n' */
 				while (buf != '\n')
 					fscanf(F, "%c", &buf);
 				fscanf(F, "%c", &buf);
@@ -405,7 +405,7 @@ IMAGERGB lectureImageRGB(const char *in)
 				fscanf(F, "%c", &buf);
 			}
 
-			/* début des data */
+			/* dï¿½but des data */
 
 			printf("Lecture image RGB type %s avec %d lignes et %d colonnes...\n", type, img.Nblig, img.Nbcol);
 
@@ -436,26 +436,26 @@ IMAGERGB lectureImageRGB(const char *in)
 
 				F = fopen(in, "rb");
 
-				/* lecture caractère après caractère compte-tenu de la diversité des entêtes possibles */
+				/* lecture caractï¿½re aprï¿½s caractï¿½re compte-tenu de la diversitï¿½ des entï¿½tes possibles */
 				type[0] = fgetc(F);
 				type[1] = fgetc(F);
-				buf = fgetc(F); /* caractère espacement */
+				buf = fgetc(F); /* caractï¿½re espacement */
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
 				}
-				while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilité d'utiliser également isdigit de la librairie standard <ctype.h> */
+				while (((buf - '0') >= 0) && ((buf - '0') <= 9)) { /* possibilitï¿½ d'utiliser ï¿½galement isdigit de la librairie standard <ctype.h> */
 					img.Nbcol = img.Nbcol * 10 + (buf - '0');
 					buf = fgetc(F);
 				}
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
@@ -467,7 +467,7 @@ IMAGERGB lectureImageRGB(const char *in)
 
 				buf = fgetc(F);
 				if (buf == '#') {
-					/* on ignore tout jusqu'à trouver '\n' */
+					/* on ignore tout jusqu'ï¿½ trouver '\n' */
 					while (buf != '\n')
 						buf = fgetc(F);
 					buf = fgetc(F);
@@ -477,7 +477,7 @@ IMAGERGB lectureImageRGB(const char *in)
 					buf = fgetc(F);
 				}
 
-				/* début des data */
+				/* dï¿½but des data */
 
 				printf("Lecture image RGB type %s avec %d lignes et %d colonnes...\n", type, img.Nblig, img.Nbcol);
 
@@ -827,7 +827,7 @@ IMAGE seuillageOtsu(IMAGE img)
 
 	tab = (double*)calloc(256, sizeof(double));
 
-	/* parcours entre min et max pour éviter divisions par 0 */
+	/* parcours entre min et max pour ï¿½viter divisions par 0 */
 	/* initialisation */
 	M1 = min;
 	seuil = min;
@@ -865,7 +865,7 @@ IMAGE seuillageOtsu(IMAGE img)
 	return out;
 }
 
-/* étiquetage V8 */
+/* ï¿½tiquetage V8 */
 IMAGE labelImage(IMAGE img, int *nbComp)
 {
 	IMAGE out = { 0,0,NULL,NULL };
@@ -939,7 +939,7 @@ IMAGE labelImage(IMAGE img, int *nbComp)
 		}
 
 
-	// actualisation de la table d'équivalence
+	// actualisation de la table d'ï¿½quivalence
 	for (int kk = 1; kk < k; kk++) {
 		int m = kk;
 		while (tableEtiquette[m] != m)
@@ -949,11 +949,11 @@ IMAGE labelImage(IMAGE img, int *nbComp)
 
 	int* etiquettes = (int*)calloc(k + 1, sizeof(int));
 
-	// histo pour repérer les trous
+	// histo pour repï¿½rer les trous
 	for (int kk = 1; kk<k; kk++)
 		etiquettes[tableEtiquette[kk]]++;
 
-	// on remet à jour les index (etiquetage définitif hors trou)
+	// on remet ï¿½ jour les index (etiquetage dï¿½finitif hors trou)
 	etiquettes[0] = 0;
 	int compt = 1;
 	for (int kk = 1; kk<k; kk++) {
@@ -1085,9 +1085,9 @@ IMAGERGB bruitAleatoireImageRGB(IMAGERGB img, int amplitude)
 	double rand;
 	for (int pix = 0; pix < img.Nbcol * img.Nblig; pix++) {
 		rand = 1 + randInt(-amplitude, amplitude)/255.0;
-		imBruit.data[pix].R = min(255, img.data[pix].R * rand);
-		imBruit.data[pix].G = min(255, img.data[pix].G * rand);
-		imBruit.data[pix].B = min(255, img.data[pix].B * rand);
+		imBruit.data[pix].R = MIN(255, img.data[pix].R * rand);
+		imBruit.data[pix].G = MIN(255, img.data[pix].G * rand);
+		imBruit.data[pix].B = MIN(255, img.data[pix].B * rand);
 	}
 
 	return imBruit;
@@ -1118,7 +1118,7 @@ IMAGE erosion(IMAGE img,  int voisinage)
 				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
 					erod.pixel[i][j] = 0;
 				else
-					erod.pixel[i][j] = min(min(min(img.pixel[i][j], img.pixel[i - 1][j]), min(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
+					erod.pixel[i][j] = MIN(MIN(MIN(img.pixel[i][j], img.pixel[i - 1][j]), MIN(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
 			}
 		}
 	}
@@ -1128,7 +1128,7 @@ IMAGE erosion(IMAGE img,  int voisinage)
 				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
 					erod.pixel[i][j] = 0;
 				else
-					erod.pixel[i][j] = min(min(min(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), min(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), min(min(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), min(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
+					erod.pixel[i][j] = MIN(MIN(MIN(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), MIN(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), MIN(MIN(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), MIN(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
 				
 			}
 		}
@@ -1147,7 +1147,7 @@ IMAGE dilatation(IMAGE img, int voisinage)
 				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
 					dilat.pixel[i][j] = 0;
 				else
-					dilat.pixel[i][j] = max(max(max(img.pixel[i][j], img.pixel[i - 1][j]), max(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
+					dilat.pixel[i][j] = MAX(MAX(MAX(img.pixel[i][j], img.pixel[i - 1][j]), MAX(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
 			}
 		}
 	}
@@ -1157,7 +1157,7 @@ IMAGE dilatation(IMAGE img, int voisinage)
 				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
 					dilat.pixel[i][j] = 0;
 				else
-					dilat.pixel[i][j] = max(max(max(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), max(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), max(max(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), max(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
+					dilat.pixel[i][j] = MAX(MAX(MAX(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), MAX(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), MAX(MAX(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), MAX(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
 
 			}
 		}
@@ -1255,11 +1255,11 @@ void rechercheImageProche(int indexIm, char **titles, int nbi, int *indexMinET, 
 			deltaET = distanceEcartTypeImage(ref, comp);
 			deltaHS = distanceHistogrammeImage(ref, comp);
 
-			if (deltaET < minET) {
+			if (deltaET < *minET) {
 				*indexMinET = i;
 				*minET = deltaET;
 			}
-			if (deltaHS < minHS) {
+			if (deltaHS < *minHS) {
 				*indexMinHS = i;
 				*minHS = deltaHS;
 			}
@@ -1391,7 +1391,7 @@ int** rechercheTrou(SIGNATURE_COMPOSANTE_CONNEXE* signObjet, SIGNATURE_COMPOSANT
 		if (ObjTrou[i] != NULL) {
 			if (ObjTrou[i][0] > 0) {
 				int nbTrou = ObjTrou[i][0];
-				max = max(max, nbTrou);
+				max = MAX(max, nbTrou);
 				if(temp[nbTrou] == NULL)
 					temp[nbTrou] = (int*)calloc(nbObjets + 1, sizeof(int));
 				temp[nbTrou][indexs[nbTrou]++] = i;
@@ -1541,4 +1541,18 @@ IMAGE imageSortieRegression(IMAGE img, char axe)
 	sauvegardeImageRGB(conversionImageFausseCouleur(result, "data/ipsi.txt"), "P6", titre);
 
 	return result;
+}
+
+IMAGE IoU(IMAGE i1, IMAGE i2, float *result){
+    IMAGE xor = allocationImage(i1.Nblig, i1.Nbcol);
+    unsigned int I = 0, U = 0;
+    for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++){
+        xor.data[i] = i1.data[i] == i2.data[i] ? 1 : 0;
+        if((i1.data[i] != 0) || (i2.data[i] != 0))
+            U++;
+        if((i1.data[i] != 0) && (i2.data[i] != 0))
+            I++;
+    }
+    *result = I/U;
+    return xor;
 }

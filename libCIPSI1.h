@@ -4,6 +4,9 @@
 
 /* librairie IPSI1 */
 
+#define MAX(a, b) a > b ? a : b
+#define MIN(a, b) a > b ? b : a
+
 typedef struct point {
 	float x;
 	float y;
@@ -121,3 +124,5 @@ void sauvegardeSignaturesImage(SIGNATURE_COMPOSANTE_CONNEXE* sig, int nbComp, co
 int** rechercheTrou(SIGNATURE_COMPOSANTE_CONNEXE* signObjet, SIGNATURE_COMPOSANTE_CONNEXE* signTrou, int nbObjets, int NbTrou, int *NbGroupes);
 
 void discriminationTrous(IMAGE img, IMAGE* res, int** configTrous, int NbObjets, int* NbGroups);
+
+IMAGE IoU(IMAGE i1, IMAGE i2, float *result);
