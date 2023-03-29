@@ -8,5 +8,5 @@ void main() {
     IMAGE res = IoU(img1, img2, &result, &GD);
     sauvegardeImage(res, "P5", "results/test1.pgm");
 
-    printf("IoU = %.3f%%, Global Delta = %.3f%%\n", 100*result, 100*GD);
+    //printf("IoU = %.3f%%, Global Delta = %.3f%%\n", 100*result, 100*GD);
 }
