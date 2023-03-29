@@ -1542,11 +1542,12 @@ IMAGE imageSortieRegression(IMAGE img, char axe)
 
 	return result;
 }
-
+/*commencement projet image en C */
 IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
     IMAGE diff = allocationImage(i1.Nblig, i1.Nbcol);	// Image de differenciation
     unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
-    for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++){
+    for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++)
+	{
         
 		if (i1.data[i] == i2.data[i])		// pixels identiques -> 0 dans diff
 			diff.data[i] = 0;
