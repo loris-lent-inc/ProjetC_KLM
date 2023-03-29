@@ -10,7 +10,8 @@
 #include "libCIPSI1.h"
 
 #define PI 3.1415926535
-
+#define V4 diamond(3)
+#define V8 full(3);
 /* static -> non extern */
 
 typedef struct
@@ -83,6 +84,35 @@ IMAGE allocationImage(int Nblig, int Nbcol)
 		mat.pixel[i] = &mat.data[i*Nbcol];
 
 	return(mat);
+}
+
+STREL allocationStrel(int Nblig, int Nbcol)
+{
+	if (!(Nblig % 2) || !(Nbcol % 2)) {
+		printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de cote impair.\n");
+		return;
+	}
+	;
+	STREL strel = { 0,0,NULL,NULL };
+	int i;
+
+	strel.Nblig = Nblig;
+	strel.Nbcol = Nbcol;
+	strel.xradius = Nblig >> 1;
+	strel.yradius = Nbcol >> 1;
+	strel.data = (unsigned char*)calloc(Nblig * Nbcol, sizeof(unsigned char));
+	if (strel.data == NULL)
+		return(strel);
+	strel.pixel = (unsigned char**)malloc(Nblig * sizeof(unsigned char*));
+	if (strel.pixel == NULL) {
+		free(strel.data);
+		strel.data = NULL;
+		return(strel);
+	}
+	for (i = 0; i < Nblig; i++)
+		strel.pixel[i] = &strel.data[i * Nbcol];
+
+	return(strel);
 }
 
 void initialisationAleatoireImage(IMAGE img, int ngMin, int ngMax)
@@ -1109,6 +1139,27 @@ IMAGERGB masqueIMAGE(IMAGE img, IMAGERGB masque)
 	return RGB;
 }
 
+IMAGE convolution(IMAGE img, STREL strel)
+{
+	IMAGE result = allocationImage(img.Nblig, img.Nbcol);
+	int sum, itemp, jtemp;
+	for (int i = 0; i < img.Nblig; i++) {
+		for (int j = 0; j < img.Nbcol; j++) {
+			sum = 0;
+			for (int x = 0; x < strel.Nblig; x++) {
+				for (int y = 0; y < strel.Nbcol; y++) {
+					itemp = x + i - strel.xradius + 1;
+					jtemp = y + j - strel.yradius + 1;
+					if ((itemp >= 0) && (itemp < img.Nblig) && (jtemp >= 0) && (jtemp < img.Nbcol))
+						sum += (img.pixel[itemp][jtemp] * strel.pixel[x][y]);
+				}
+			}
+			result.pixel[i][j] = sum;
+		}
+	}
+	return result;
+}
+
 IMAGE erosion(IMAGE img,  int voisinage)
 {
 	IMAGE erod = allocationImage(img.Nblig, img.Nbcol);
@@ -1562,3 +1613,42 @@ IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
 	*GlobalDelta = 1 - ((float)(uni - intersect) / (diff.Nblig * diff.Nbcol));
     return diff;
 }
+
+STREL diamond(int taille)
+{
+	STREL diamond = allocationStrel(taille, taille);
+	int mid = taille >> 1 ;
+	for (int i = 0; i < taille; i++) {
+		for (int j = 0; j < taille; j++) {
+			int d = abs(i -mid) + abs(j - mid);
+			if (d < taille) {
+				diamond.pixel[i][j] = 255;
+			}
+		}
+	}
+}
+
+STREL disk(int taille)
+{
+	STREL disk = allocationStrel(taille, taille);
+	int mid = taille >> 1;
+	for (int i = 0; i < taille; i++) {
+		for (int j = 0; j < taille; j++) {
+			int d = sqrt(pow(abs(i - mid), 2) + pow(abs(j - mid), 2));
+			if (d < taille) {
+				disk.pixel[i][j] = 255;
+			}
+		}
+	}
+}
+
+STREL full(int taille)
+{
+	STREL full = allocationStrel(3, 3);
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; i++)
+			full.pixel[i][j] = 255;
+
+	return full;
+}
+
