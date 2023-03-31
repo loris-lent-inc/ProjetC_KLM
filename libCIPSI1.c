@@ -10,8 +10,6 @@
 #include "libCIPSI1.h"
 
 #define PI 3.1415926535
-#define V4 diamond(3)
-#define V8 full(3);
 /* static -> non extern */
 
 typedef struct
@@ -71,7 +69,7 @@ IMAGE allocationImage(int Nblig, int Nbcol)
 
 	mat.Nblig = Nblig;
 	mat.Nbcol = Nbcol;
-	mat.data = (unsigned char*)malloc(Nblig*Nbcol*sizeof(unsigned char));
+	mat.data = (unsigned char*)calloc(Nblig*Nbcol, sizeof(unsigned char));
 	if (mat.data == NULL)
 		return(mat);
 	mat.pixel = (unsigned char**)malloc(Nblig*sizeof(unsigned char*));
@@ -98,12 +96,12 @@ STREL allocationStrel(int Nblig, int Nbcol)
 
 	strel.Nblig = Nblig;
 	strel.Nbcol = Nbcol;
-	strel.xradius = Nblig >> 1;
-	strel.yradius = Nbcol >> 1;
-	strel.data = (unsigned char*)calloc(Nblig * Nbcol, sizeof(unsigned char));
+	strel.xradius = 1 + Nblig >> 1;
+	strel.yradius = 1 + Nbcol >> 1;
+	strel.data = (float*)calloc(Nblig * Nbcol, sizeof(float));
 	if (strel.data == NULL)
 		return(strel);
-	strel.pixel = (unsigned char**)malloc(Nblig * sizeof(unsigned char*));
+	strel.pixel = (float**)malloc(Nblig * sizeof(float*));
 	if (strel.pixel == NULL) {
 		free(strel.data);
 		strel.data = NULL;
@@ -1142,27 +1140,36 @@ IMAGERGB masqueIMAGE(IMAGE img, IMAGERGB masque)
 IMAGE convolution(IMAGE img, STREL strel)
 {
 	IMAGE result = allocationImage(img.Nblig, img.Nbcol);
-	int sum, itemp, jtemp;
-	for (int i = 0; i < img.Nblig; i++) {
-		for (int j = 0; j < img.Nbcol; j++) {
+	float sum;
+	int i, j, itemp, jtemp, x, y;
+	for ( i = 0; i < img.Nblig; i++) {
+		for ( j = 0; j < img.Nbcol; j++) {
 			sum = 0;
-			for (int x = 0; x < strel.Nblig; x++) {
-				for (int y = 0; y < strel.Nbcol; y++) {
-					itemp = x + i - strel.xradius + 1;
-					jtemp = y + j - strel.yradius + 1;
+			for ( y = 0; y < strel.Nblig; y++) {
+				for ( x = 0; x < strel.Nbcol; x++) {
+					itemp = y + i - strel.xradius + 1;
+					jtemp = x + j - strel.yradius + 1;
 					if ((itemp >= 0) && (itemp < img.Nblig) && (jtemp >= 0) && (jtemp < img.Nbcol))
-						sum += (img.pixel[itemp][jtemp] * strel.pixel[x][y]);
+						sum += (img.pixel[itemp][jtemp] * strel.pixel[y][x]);
 				}
 			}
-			result.pixel[i][j] = sum;
+			result.pixel[i][j] = (char) sum;
 		}
 	}
 	return result;
 }
 
-IMAGE erosion(IMAGE img,  int voisinage)
+IMAGE erosion(IMAGE img,  STREL strel)
 {
 	IMAGE erod = allocationImage(img.Nblig, img.Nbcol);
+	VOISINAGE V;
+	
+	for (int i = 0; i < img.Nblig; i++)
+		for (int j = 0; j < img.Nbcol; j++)
+			if (img.pixel[i][j] != 0)
+				erod.pixel[i][j] = getVal(voisinage(img, i, j, strel), "min");
+
+	/*
 	if (voisinage == 4) {
 		for (int i = 0; i < img.Nblig; i++) {
 			for (int j = 0; j < img.Nbcol; j++) {
@@ -1184,15 +1191,23 @@ IMAGE erosion(IMAGE img,  int voisinage)
 			}
 		}
 	}
-	else printf("Voisinage invalide (4 ou 8)\n");
+	else printf("Voisinage invalide (4 ou 8)\n");*/
 
 	return erod;
 }
 
-IMAGE dilatation(IMAGE img, int voisinage)
+IMAGE dilatation(IMAGE img, STREL strel)
 {
 	IMAGE dilat = allocationImage(img.Nblig, img.Nbcol);
-	if (voisinage == 4) {
+	VOISINAGE V;
+
+	for (int i = 0; i < img.Nblig; i++)
+		for (int j = 0; j < img.Nbcol; j++)
+			if (img.pixel[i][j] != 0) 
+				dilat.pixel[i][j] = getVal(voisinage(img, i, j, strel), "max");
+
+	
+	/*if (voisinage == 4) {
 		for (int i = 0; i < img.Nblig; i++) {
 			for (int j = 0; j < img.Nbcol; j++) {
 				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
@@ -1213,7 +1228,7 @@ IMAGE dilatation(IMAGE img, int voisinage)
 			}
 		}
 	}
-	else printf("Voisinage invalide (4 ou 8)\n");
+	else printf("Voisinage invalide (4 ou 8)\n");*/
 
 	return dilat;
 }
@@ -1347,7 +1362,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 	int max = 0;
 	
-	IMAGE er = erosion(img, 4);
+	IMAGE er = erosion(img, V4);
 	IMAGE cnt = difference(img, er);
 	//sauvegardeImageRGB(conversionImageFausseCouleur(img, "data/ipsi.txt"), "P6", "test/img.ppm");
 	//sauvegardeImageRGB(conversionImageFausseCouleur(er, "data/ipsi.txt"), "P6", "test/er.ppm");
@@ -1620,35 +1635,102 @@ STREL diamond(int taille)
 	int mid = taille >> 1 ;
 	for (int i = 0; i < taille; i++) {
 		for (int j = 0; j < taille; j++) {
-			int d = abs(i -mid) + abs(j - mid);
-			if (d < taille) {
-				diamond.pixel[i][j] = 255;
+			int d = abs(i - mid) + abs(j - mid);
+			if (d < diamond.xradius) {
+				diamond.pixel[i][j] = 1;
 			}
+			else
+				diamond.pixel[i][j] = 0;
 		}
 	}
+	return diamond;
 }
 
 STREL disk(int taille)
 {
 	STREL disk = allocationStrel(taille, taille);
-	int mid = taille >> 1;
+	//int disk.xradius = taille >> 1;
 	for (int i = 0; i < taille; i++) {
 		for (int j = 0; j < taille; j++) {
-			int d = sqrt(pow(abs(i - mid), 2) + pow(abs(j - mid), 2));
+			int d = sqrt(pow(abs(i - disk.xradius), 2) + pow(abs(j - disk.xradius), 2));
 			if (d < taille) {
-				disk.pixel[i][j] = 255;
+				disk.pixel[i][j] = 1;
 			}
 		}
 	}
 }
 
-STREL full(int taille)
+STREL full(int taille, float valeur)
 {
-	STREL full = allocationStrel(3, 3);
+	STREL full = allocationStrel(taille, taille);
 	for (int i = 0; i < 3; i++)
-		for (int j = 0; j < 3; i++)
-			full.pixel[i][j] = 255;
+		for (int j = 0; j < 3; j++)
+			full.pixel[i][j] = valeur;
 
 	return full;
+}
+
+VOISINAGE allocVois(STREL strel)
+{
+	VOISINAGE v;
+	v.nb = 0;
+	v.pixels = (unsigned char*)malloc(strel.Nbcol * strel.Nblig * sizeof(unsigned char));
+	return v;
+}
+
+VOISINAGE voisinage(IMAGE img, int y, int x, STREL strel)
+{
+	VOISINAGE v = allocVois(strel);
+	int imin = y - strel.yradius + 1, imax = imin + strel.Nblig;
+	int jmin = x - strel.xradius + 1, jmax = jmin + strel.Nbcol;
+	unsigned char temp;
+	for (int i = imin; i < imax; i++) {
+		if (i < 0 || i >= img.Nblig)
+			continue;
+		for (int j = jmin; j < jmax; j++) {
+			if (j < 0 || j >= img.Nbcol)
+				continue;
+			if (strel.pixel[i - imin][j - jmin] == 0)
+				continue;
+			if (i == y && j == x)
+				continue;
+
+			temp = img.pixel[i][j]; //*strel.pixel[i - x][j - y];
+			
+			//if (temp <= 0)
+				//continue;
+			
+			v.pixels[v.nb++] = temp;
+		}
+	}
+	return v;
+}
+
+unsigned char getVal(VOISINAGE v, char* type)
+{
+	unsigned char res = 0;
+	
+	if (v.nb == 0)
+		return 0;
+
+	else if (type == "min" || type == "MIN") {
+		res = v.pixels[0];
+		for (int i = 1; i < v.nb; i++) {
+			res = MIN(res, v.pixels[i]);
+		}
+	}
+	else if (type == "max" || type == "MAX") {
+		res = v.pixels[0];
+		for (int i = 1; i < v.nb; i++) {
+			res = MAX(res, v.pixels[i]);
+		}
+	}
+	else if (type == "mean" || type == "MEAN" || type == "moyenne" || type == "MOYENNE" || type == "average" || type == "AVERAGE") {
+		for (int i = 0; i < v.nb; i++) {
+			res += v.pixels[i];
+		}
+		res /= v.nb;
+	}
+	return res;
 }
 
