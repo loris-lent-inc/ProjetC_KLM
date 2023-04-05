@@ -724,6 +724,7 @@ int* histogrammeImageRGB(IMAGERGB img, int choix, int n)
 
 IMAGE expansionImage(IMAGE img, int outMin, int outMax)
 {
+	//return img;
 	IMAGE out = { 0,0,NULL,NULL };
 	int* lut = NULL;
 	int i;
@@ -1237,7 +1238,9 @@ IMAGE difference(IMAGE img1, IMAGE img2) {
 	IMAGE res = allocationImage(img1.Nblig, img1.Nbcol);
 	int diff = 0;
 	for (int pix = 0; pix < res.Nbcol * res.Nblig; pix++) {
-		diff = img1.data[pix] - img2.data[pix];
+		diff = 0;
+		if(img1.data[pix] > img2.data[pix]) diff = img1.data[pix] - img2.data[pix];
+		
 		/*if (diff) {
 			printf("ha");
 		}*/
@@ -1362,7 +1365,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 	int max = 0;
 	
-	IMAGE er = erosion(img, V4);
+	IMAGE er = erosion(img, V4());
 	IMAGE cnt = difference(img, er);
 	//sauvegardeImageRGB(conversionImageFausseCouleur(img, "data/ipsi.txt"), "P6", "test/img.ppm");
 	//sauvegardeImageRGB(conversionImageFausseCouleur(er, "data/ipsi.txt"), "P6", "test/er.ppm");
@@ -1630,7 +1633,7 @@ IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
     return diff;
 }
 
-STREL diamond(int taille)
+STREL diamond(int taille, float valeur)
 {
 	STREL diamond = allocationStrel(taille, taille);
 	int mid = taille >> 1 ;
@@ -1638,16 +1641,14 @@ STREL diamond(int taille)
 		for (int j = 0; j < taille; j++) {
 			int d = abs(i - mid) + abs(j - mid);
 			if (d < diamond.xradius) {
-				diamond.pixel[i][j] = 1;
+				diamond.pixel[i][j] = valeur;
 			}
-			else
-				diamond.pixel[i][j] = 0;
 		}
 	}
 	return diamond;
 }
 
-STREL disk(int taille)
+STREL disk(int taille, float valeur)
 {
 	STREL disk = allocationStrel(taille, taille);
 	//int disk.xradius = taille >> 1;
@@ -1655,10 +1656,11 @@ STREL disk(int taille)
 		for (int j = 0; j < taille; j++) {
 			int d = sqrt(pow(abs(i - disk.xradius), 2) + pow(abs(j - disk.xradius), 2));
 			if (d < taille) {
-				disk.pixel[i][j] = 1;
+				disk.pixel[i][j] = valeur;
 			}
 		}
 	}
+	return disk;
 }
 
 STREL full(int taille, float valeur)
@@ -1671,6 +1673,20 @@ STREL full(int taille, float valeur)
 	return full;
 }
 
+STREL V4()
+{
+	STREL v4 = diamond(3, 1.0f/4);
+	v4.pixel[1][1] = 0;
+	return v4;
+}
+
+STREL V8()
+{
+	STREL v8 = full(3, 1.0f/8);
+	v8.pixel[1][1] = 0;
+	return v8;
+}
+
 VOISINAGE allocVois(STREL strel)
 {
 	VOISINAGE v;
@@ -1678,6 +1694,8 @@ VOISINAGE allocVois(STREL strel)
 	v.pixels = (unsigned char*)malloc(strel.Nbcol * strel.Nblig * sizeof(unsigned char));
 	return v;
 }
+
+
 
 VOISINAGE voisinage(IMAGE img, int y, int x, STREL strel)
 {

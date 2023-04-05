@@ -6,8 +6,8 @@
 
 #define MAX(a, b) a > b ? a : b
 #define MIN(a, b) a > b ? b : a
-#define V4 diamond(3)
-#define V8 full(3, 1.0f/9)
+//#define V4 diamond(3)
+//#define V8 full(3, 1.0f/9)
 
 typedef struct point {
 	float x;
@@ -122,13 +122,21 @@ IMAGERGB bruitAleatoireImageRGB(IMAGERGB img, int amplitude);
 
 IMAGERGB masqueIMAGE(IMAGE img, IMAGERGB masque);
 
+STREL diamond(int taille, float valeur);
+STREL disk(int taille, float valeur);
+STREL full(int taille, float valeur);
+STREL V4();
+STREL V8();
+
 IMAGE convolution(IMAGE img, STREL strel);
 IMAGE erosion(IMAGE img, STREL strel);
 IMAGE dilatation(IMAGE img, STREL strel);
 inline IMAGE fermeture(IMAGE img, STREL strel){ return erosion(dilatation(img, strel), strel); }
 inline IMAGE ouverture(IMAGE img, STREL strel){ return dilatation(erosion(img, strel), strel); }
-
 IMAGE difference(IMAGE img1, IMAGE img2);
+inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(img, dilatation(erosion(img, strel), strel)), 0, 300), V8()); }
+inline IMAGE blackTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(erosion(dilatation(img, strel), strel), img), 0, 300), V8()); }
+
 
 float perimetre(IMAGE img, int sig);
 
@@ -147,10 +155,6 @@ void discriminationTrous(IMAGE img, IMAGE* res, int** configTrous, int NbObjets,
 // Fonction de notation de resultat
 // retourne une image avec les différences et 2 mesures de ressemblance (une locale, une globale)
 IMAGE IoU(IMAGE i1, IMAGE i2, float* IoU, float* GlobalDelta);
-
-STREL diamond(int taille);
-STREL disk(int taille);
-STREL full(int taille, float valeur);
 
 VOISINAGE allocVois(STREL strel);
 VOISINAGE voisinage(IMAGE img, int x, int y, STREL strel);
