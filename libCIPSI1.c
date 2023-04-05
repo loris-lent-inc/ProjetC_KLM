@@ -1753,12 +1753,3 @@ unsigned char getVal(VOISINAGE v, char* type)
 	return res;
 }
 
-IMAGE filter_repeat(IMAGE (*application)(IMAGE img, STREL strel), IMAGE img, STREL strel, int iterations)
-{
-	IMAGE result = img;
-	for (int i = 0; i < iterations; i++) {
-		result = application(result, strel);
-	}
-	return result;
-}
-

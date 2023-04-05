@@ -134,8 +134,8 @@ IMAGE dilatation(IMAGE img, STREL strel);
 inline IMAGE fermeture(IMAGE img, STREL strel){ return erosion(dilatation(img, strel), strel); }
 inline IMAGE ouverture(IMAGE img, STREL strel){ return dilatation(erosion(img, strel), strel); }
 IMAGE difference(IMAGE img1, IMAGE img2);
-inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return filter_repeat(convolution, expansionImage(difference(img, dilatation(erosion(img, strel), strel)), 0, 255), V8(), 2); }
-inline IMAGE blackTopHat(IMAGE img, STREL strel) { return filter_repeat(convolution, expansionImage(difference(erosion(dilatation(img, strel), strel), img), 0, 255), V8(), 2); }
+inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(img, dilatation(erosion(img, strel), strel)), 0, 300), V8()); }
+inline IMAGE blackTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(erosion(dilatation(img, strel), strel), img), 0, 300), V8()); }
 
 
 float perimetre(IMAGE img, int sig);
@@ -159,6 +159,3 @@ IMAGE IoU(IMAGE i1, IMAGE i2, float* IoU, float* GlobalDelta);
 VOISINAGE allocVois(STREL strel);
 VOISINAGE voisinage(IMAGE img, int x, int y, STREL strel);
 unsigned char getVal(VOISINAGE v, char* type);
-
-// Fonction prenant un filtre, un image, un strel, et un nombre d'iterations, et retourne l'image avec le filtre appliqué n fois
-IMAGE filter_repeat(IMAGE(*application)(IMAGE img, STREL strel), IMAGE img, STREL strel, int iterations);
