@@ -20,12 +20,6 @@ typedef struct
 	int **pixel;
 } intIMAGE;
 
-
-//int randInt(int min, int max)
-//{
-//	return min + ((float)rand() / RAND_MAX) * (max - min);
-//}
-
 static intIMAGE allocationIntImage(int Nblig, int Nbcol)
 {
 	intIMAGE mat = { 0,0,NULL,NULL };
@@ -1170,30 +1164,6 @@ IMAGE erosion(IMAGE img,  STREL strel)
 			if (img.pixel[i][j] != 0)
 				erod.pixel[i][j] = getVal(voisinage(img, i, j, strel), "min");
 
-	/*
-	if (voisinage == 4) {
-		for (int i = 0; i < img.Nblig; i++) {
-			for (int j = 0; j < img.Nbcol; j++) {
-				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
-					erod.pixel[i][j] = 0;
-				else
-					erod.pixel[i][j] = MIN(MIN(MIN(img.pixel[i][j], img.pixel[i - 1][j]), MIN(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
-			}
-		}
-	}
-	else if (voisinage == 8) {
-		for (int i = 1; i < img.Nblig - 1; i++) {
-			for (int j = 1; j < img.Nbcol - 1; j++) {
-				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
-					erod.pixel[i][j] = 0;
-				else
-					erod.pixel[i][j] = MIN(MIN(MIN(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), MIN(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), MIN(MIN(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), MIN(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
-				
-			}
-		}
-	}
-	else printf("Voisinage invalide (4 ou 8)\n");*/
-
 	return erod;
 }
 
@@ -1207,31 +1177,19 @@ IMAGE dilatation(IMAGE img, STREL strel)
 			if (img.pixel[i][j] != 0) 
 				dilat.pixel[i][j] = getVal(voisinage(img, i, j, strel), "max");
 
-	
-	/*if (voisinage == 4) {
-		for (int i = 0; i < img.Nblig; i++) {
-			for (int j = 0; j < img.Nbcol; j++) {
-				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
-					dilat.pixel[i][j] = 0;
-				else
-					dilat.pixel[i][j] = MAX(MAX(MAX(img.pixel[i][j], img.pixel[i - 1][j]), MAX(img.pixel[i][j - 1], img.pixel[i + 1][j])), img.pixel[i][j + 1]);
-			}
-		}
-	}
-	else if (voisinage == 8) {
-		for (int i = 1; i < img.Nblig - 1; i++) {
-			for (int j = 1; j < img.Nbcol - 1; j++) {
-				if (i == 0 || i == img.Nblig - 1 || j == 0 || j == img.Nbcol - 1)
-					dilat.pixel[i][j] = 0;
-				else
-					dilat.pixel[i][j] = MAX(MAX(MAX(img.pixel[i - 1][j], img.pixel[i - 1][j - 1]), MAX(img.pixel[i][j - 1], img.pixel[i + 1][j - 1])), MAX(MAX(img.pixel[i + 1][j], img.pixel[i + 1][j + 1]), MAX(img.pixel[i][j + 1], img.pixel[i - 1][j + 1])));
-
-			}
-		}
-	}
-	else printf("Voisinage invalide (4 ou 8)\n");*/
-
 	return dilat;
+}
+
+IMAGE mediane(IMAGE img, STREL strel) {
+	IMAGE med = allocationImage(img.Nblig, img.Nbcol);
+	VOISINAGE V;
+
+	for (int i = 0; i < img.Nblig; i++)
+		for (int j = 0; j < img.Nbcol; j++)
+			if (img.pixel[i][j] != 0)
+				med.pixel[i][j] = getVal(voisinage(img, i, j, strel), "median");
+
+	return med;
 }
 
 IMAGE difference(IMAGE img1, IMAGE img2) {
@@ -1362,6 +1320,10 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 		sign[i].surface = 0;
 		sign[i].CG.x = 0;
 		sign[i].CG.y = 0;
+		sign[i].region.x = img.Nblig;
+		sign[i].region.y = img.Nbcol;
+		sign[i].region.width = 0;
+		sign[i].region.height = 0;
 	}
 	int max = 0;
 	
@@ -1385,6 +1347,10 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 		int j = k / img.Nblig;
 		sign[img.data[k]].CG.x += i;
 		sign[img.data[k]].CG.y += j;
+		sign[img.data[k]].region.x = MIN(i, sign[img.data[k]].region.x);
+		sign[img.data[k]].region.y = MIN(j, sign[img.data[k]].region.y);
+		sign[img.data[k]].region.width = MAX(i, sign[img.data[k]].region.width);
+		sign[img.data[k]].region.height = MAX(j, sign[img.data[k]].region.height);
 	}
 	for (int i = 1; i < nbComp + 1; i++) {
 		sign[i].perimetre = perimetre(cnt, i);
@@ -1695,8 +1661,6 @@ VOISINAGE allocVois(STREL strel)
 	return v;
 }
 
-
-
 VOISINAGE voisinage(IMAGE img, int y, int x, STREL strel)
 {
 	VOISINAGE v = allocVois(strel);
@@ -1725,6 +1689,27 @@ VOISINAGE voisinage(IMAGE img, int y, int x, STREL strel)
 	return v;
 }
 
+void sort(VOISINAGE* v) {
+	int temp;
+	for (int i = 0; i < v->nb; i++) {
+		for (int j = 0; j < v->nb - 1; j++) {
+			if (v->pixels[j] > v->pixels[j + 1]) {
+				temp = v->pixels[j + 1];
+				v->pixels[j + 1] = v->pixels[j];
+				v->pixels[j] = temp;
+			}
+		}
+	}
+}
+
+unsigned char medianeVoisinage(VOISINAGE v) {
+	sort(&v);
+	if (v.nb % 2 == 0)
+		return (v.pixels[v.nb / 2] + v.pixels[v.nb / 2 + 1]) / 2;
+	else
+		return v.pixels[v.nb / 2 + 1];
+}
+
 unsigned char getVal(VOISINAGE v, char* type)
 {
 	unsigned char res = 0;
@@ -1750,6 +1735,78 @@ unsigned char getVal(VOISINAGE v, char* type)
 		}
 		res /= v.nb;
 	}
+	else if (type == "median" || type == "Median" || type == "mediane" || type == "Mediane") {
+		res = medianeVoisinage(v);
+	}
 	return res;
 }
 
+float Vinet(IMAGE test, IMAGE refc)
+{
+	int nt =0, nr=0, nm = 0;
+
+	SIGNATURE_COMPOSANTE_CONNEXE* st = signaturesImage(labelImage(test, &nt), nt);
+	SIGNATURE_COMPOSANTE_CONNEXE* sr = signaturesImage(labelImage(refc, &nr), nr);
+
+	nm = MIN(nt, nr);
+	float totalArea = 0;
+	float score = 0;
+
+	for (int i = 1; i < nm; i++) {
+		SIGNATURE_COMPOSANTE_CONNEXE* bestchoice = &(sr[1]);
+		float minDis = distanceSQ(st[i].CG, bestchoice->CG);
+
+		for (int j = 2; (j < nm) && (belongTo(bestchoice->CG, st[i].region) != 0); j++) {
+			if (distanceSQ(st[i].CG, sr[j].CG) < minDis) {
+				bestchoice = &(sr[j]);
+				minDis = distanceSQ(st[i].CG, bestchoice->CG);
+			}
+		}
+		int minX = MIN(st[i].region.x, bestchoice->region.x);
+		int minY = MIN(st[i].region.y, bestchoice->region.y);
+		int maxX = MAX(st[i].region.x + st[i].region.width, bestchoice->region.x + bestchoice->region.width);
+		int maxY = MAX(st[i].region.y + st[i].region.height, bestchoice->region.y + bestchoice->region.height);
+		REGION compareRegion = { minX, minY, maxX - minX, maxY - minY };
+
+		totalArea += compareRegion.height * compareRegion.width;
+		score += (compareRegion.height * compareRegion.width)*localIoU(test, refc, compareRegion);
+	}
+
+	if (nt < nr) {
+		for (int i = nt; i < nr; i++) {
+			totalArea += sr[i].region.height * sr[i].region.width;
+		}
+	}
+	else if (nt > nr) {
+		for (int i = nr; i < nt; i++) {
+			totalArea += st[i].region.height * st[i].region.width;
+		}
+	}
+
+	score /= totalArea;
+	return score;
+}
+
+float localIoU(IMAGE test, IMAGE ref, REGION reg)
+{
+	IMAGE diff = allocationImage(reg.height, reg.width);	// Image de differenciation
+	unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
+	for (unsigned int i = reg.x; i < reg.x+reg.width; i++)
+	{
+		for (unsigned int j = reg.y; j < reg.y + reg.height; j++) {
+			int index = j * test.Nbcol + i;
+
+			/*if (test.data[index] == ref.data[index])		// pixels identiques -> 0 dans diff
+				diff.data[index] = 0;
+			else								// pixels differents -> 1 dans diff
+				diff.data[index] = 255;*/
+
+			if ((test.pixel[j][i] != 0) || (ref.pixel[j][i] != 0))
+				uni++;										// Si une des images a un defaut
+			if ((test.pixel[j][i] != 0) && (ref.pixel[j][i] != 0))
+				intersect++;								// Si les deux images ont un defaut
+		}
+	}
+	
+	return (float)intersect / uni;
+}

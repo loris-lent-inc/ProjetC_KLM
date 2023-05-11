@@ -352,3 +352,7 @@ MigrationBackup/
 cmake-build-debug/*
 CMakeLists.txt
 .idea/misc.xml
+
+ipsi.txt
+
+results/

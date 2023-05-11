@@ -42,6 +42,13 @@ typedef struct signatures {
 	int		mediane;
 } SIGNATURES;
 
+typedef struct region {
+	int x;
+	int y;
+	int width;
+	int height;
+} REGION;
+
 typedef struct signature_composantes_connexes {
 	int surface;
 	float perimetre;
@@ -49,6 +56,7 @@ typedef struct signature_composantes_connexes {
 	int bord;
 	POINT CG;
 	float rayon;
+	REGION region;
 } SIGNATURE_COMPOSANTE_CONNEXE;
 
 typedef struct element_structurant {
@@ -131,6 +139,7 @@ STREL V8();
 IMAGE convolution(IMAGE img, STREL strel);
 IMAGE erosion(IMAGE img, STREL strel);
 IMAGE dilatation(IMAGE img, STREL strel);
+IMAGE mediane(IMAGE img, STREL strel);
 inline IMAGE fermeture(IMAGE img, STREL strel){ return erosion(dilatation(img, strel), strel); }
 inline IMAGE ouverture(IMAGE img, STREL strel){ return dilatation(erosion(img, strel), strel); }
 IMAGE difference(IMAGE img1, IMAGE img2);
@@ -152,10 +161,32 @@ int** rechercheTrou(SIGNATURE_COMPOSANTE_CONNEXE* signObjet, SIGNATURE_COMPOSANT
 
 void discriminationTrous(IMAGE img, IMAGE* res, int** configTrous, int NbObjets, int* NbGroups);
 
+inline float distanceSQ(POINT p1, POINT p2) {
+	return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
+}
+
+inline char belongTo(POINT p, REGION reg) {
+	if (p.x > reg.x && p.y > reg.y && p.x < reg.x + reg.width && p.y < reg.y + reg.height) {
+		return 1;
+	}
+	return 0;
+};
+
 // Fonction de notation de resultat
 // retourne une image avec les différences et 2 mesures de ressemblance (une locale, une globale)
 IMAGE IoU(IMAGE i1, IMAGE i2, float* IoU, float* GlobalDelta);
 
+float localIoU(IMAGE test, IMAGE ref, REGION reg);
+void sort(VOISINAGE* v);
+unsigned char medianeVoisinage(VOISINAGE v);
+float Vinet(IMAGE i1, IMAGE i2);
+
+
+// Alloue le pointeur pour le voisinage
 VOISINAGE allocVois(STREL strel);
+
+// Cherche les pixels faisant partie du voisinage du pixel (x, y) dans l'img
 VOISINAGE voisinage(IMAGE img, int x, int y, STREL strel);
+
+// Retourne la valeur correspondant au type (min, max, average, ...) dans le voisinage associé 
 unsigned char getVal(VOISINAGE v, char* type);

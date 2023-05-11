@@ -1,16 +1,16 @@
 #include "libCIPSI1.h"
 void main() {
-    IMAGE img1 = lectureImage("Source_images/In_30.pgm");
-    STREL v = disk(31, 1);
-    img1 = convolution(img1, disk(3, 1.0f/5));
-    IMAGE img2 = difference(erosion(dilatation(img1, v), v), img1);
-    IMAGE img3 = blackTopHat(img1, v);
-
-    sauvegardeImage(img1, "P2", "results/con.pgm");
-    sauvegardeImage(img2, "P2", "results/wth.pgm");
-    sauvegardeImage(img3, "P2", "results/bth.pgm");
-
+    int n;
+    IMAGE img1 = lectureImage("Ground_truth/In_1.pgm");
+    IMAGE img2 = lectureImage("Ground_truth/In_7.pgm");
+    IMAGE img3 = lectureImage("Source_images/In_3.pgm");
+    IMAGE img4 = mediane(img3, V8());
     
+    float iou, gd;
+    IoU(img1, img2, &iou, &gd);
 
-    //printf("IoU = %.3f%%, Global Delta = %.3f%%\n", 100*result, 100*GD);
+    printf("Score Vinet : %.3f%% de corresondance.\n\n", 100*Vinet(img1, img2));
+    printf("IoU = %.3f%%, Global Delta = %.3f%%\n", 100*iou, 100*gd);
+
+    sauvegardeImage(img4, "P2", "results/con.pgm");
 }
