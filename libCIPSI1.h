@@ -73,6 +73,11 @@ typedef struct voisinage {
 	unsigned char* pixels;
 }VOISINAGE;
 
+typedef struct {
+    char **filenames;
+    int count;
+} FileList;
+
 int randInt(int min, int max);
 
 POINT* imageVersPoints(IMAGE img, int* n, char axe);
@@ -155,6 +160,8 @@ IMAGE applicateurLUTVal(IMAGE img, int* LUT);
 void applicateurLUTRef(IMAGE* img, int* LUT);
 
 SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp);
+IMAGE supprimerComposanteConnexe(IMAGE img, int numComp);
+IMAGE labelToBinary(IMAGE img, int numComp);
 void sauvegardeSignaturesImage(SIGNATURE_COMPOSANTE_CONNEXE* sig, int nbComp, const char* fichier);
 
 int** rechercheTrou(SIGNATURE_COMPOSANTE_CONNEXE* signObjet, SIGNATURE_COMPOSANTE_CONNEXE* signTrou, int nbObjets, int NbTrou, int *NbGroupes);
@@ -190,3 +197,5 @@ VOISINAGE voisinage(IMAGE img, int x, int y, STREL strel);
 
 // Retourne la valeur correspondant au type (min, max, average, ...) dans le voisinage associé 
 unsigned char getVal(VOISINAGE v, char* type);
+
+double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef);

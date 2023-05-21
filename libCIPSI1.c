@@ -80,31 +80,30 @@ IMAGE allocationImage(int Nblig, int Nbcol)
 
 STREL allocationStrel(int Nblig, int Nbcol)
 {
-	if (!(Nblig % 2) || !(Nbcol % 2)) {
-		printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de cote impair.\n");
-		return;
-	}
-	;
-	STREL strel = { 0,0,NULL,NULL };
-	int i;
+    if (Nblig % 2 != 1 || Nbcol % 2 != 1) {
+        printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de côté impair.\n");
+    } else {
+        STREL strel;
+        int i;
 
-	strel.Nblig = Nblig;
-	strel.Nbcol = Nbcol;
-	strel.xradius = 1 + Nblig >> 1;
-	strel.yradius = 1 + Nbcol >> 1;
-	strel.data = (float*)calloc(Nblig * Nbcol, sizeof(float));
-	if (strel.data == NULL)
-		return(strel);
-	strel.pixel = (float**)malloc(Nblig * sizeof(float*));
-	if (strel.pixel == NULL) {
-		free(strel.data);
-		strel.data = NULL;
-		return(strel);
-	}
-	for (i = 0; i < Nblig; i++)
-		strel.pixel[i] = &strel.data[i * Nbcol];
+        strel.Nblig = Nblig;
+        strel.Nbcol = Nbcol;
+        strel.xradius = (Nblig + 1) / 2;
+        strel.yradius = (Nbcol + 1) / 2;
+        strel.data = (float *) calloc(Nblig * Nbcol, sizeof(float));
+        if (strel.data == NULL)
+            return strel;
+        strel.pixel = (float **) malloc(Nblig * sizeof(float *));
+        if (strel.pixel == NULL) {
+            free(strel.data);
+            strel.data = NULL;
+            return strel;
+        }
+        for (i = 0; i < Nblig; i++)
+            strel.pixel[i] = &strel.data[i * Nbcol];
 
-	return(strel);
+        return(strel);
+    }
 }
 
 void initialisationAleatoireImage(IMAGE img, int ngMin, int ngMax)
@@ -1198,7 +1197,7 @@ IMAGE difference(IMAGE img1, IMAGE img2) {
 	for (int pix = 0; pix < res.Nbcol * res.Nblig; pix++) {
 		diff = 0;
 		if(img1.data[pix] > img2.data[pix]) diff = img1.data[pix] - img2.data[pix];
-		
+
 		/*if (diff) {
 			printf("ha");
 		}*/
@@ -1373,10 +1372,26 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 		sign[img.pixel[img.Nblig - 1][k]].bord = 1;
 	}
 
-	applicateurLUTRef(&img, LUTBords);
+	//applicateurLUTRef(&img, LUTBords);
 	//sauvegardeImageRGB(conversionImageFausseCouleur(img, "data/ipsi.txt"), "P6", "test/img.ppm");
 
 	return sign;
+}
+
+IMAGE supprimerComposanteConnexe(IMAGE img, int number) {
+    for (int k = 0; k < img.Nbcol * img.Nblig; k++) {
+        if (img.data[k] == number)
+            img.data[k] = 0;
+    }
+    return img;
+}
+
+IMAGE labelToBinary(IMAGE img, int numComp) {
+    for (int i = 0; i < img.Nbcol * img.Nblig; i++) {
+        if (img.data[i] > 0)
+            img.data[i] = 255;
+    }
+    return img;
 }
 
 void sauvegardeSignaturesImage(SIGNATURE_COMPOSANTE_CONNEXE* sig, int nbComp, const char* fichier)
@@ -1583,12 +1598,12 @@ IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
     unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
     for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++)
 	{
-        
+
 		if (i1.data[i] == i2.data[i])		// pixels identiques -> 0 dans diff
 			diff.data[i] = 0;
 		else								// pixels differents -> 1 dans diff
 			diff.data[i] = 255;
-        
+
 		if((i1.data[i] != 0) || (i2.data[i] != 0))
             uni++;										// Si une des images a un defaut
         if((i1.data[i] != 0) && (i2.data[i] != 0))
@@ -1616,17 +1631,17 @@ STREL diamond(int taille, float valeur)
 
 STREL disk(int taille, float valeur)
 {
-	STREL disk = allocationStrel(taille, taille);
-	//int disk.xradius = taille >> 1;
-	for (int i = 0; i < taille; i++) {
-		for (int j = 0; j < taille; j++) {
-			int d = sqrt(pow(abs(i - disk.xradius), 2) + pow(abs(j - disk.xradius), 2));
-			if (d < taille) {
-				disk.pixel[i][j] = valeur;
-			}
-		}
-	}
-	return disk;
+    STREL disk = allocationStrel(taille, taille);
+    int xradius = taille >> 1;
+    for (int i = 0; i < taille; i++) {
+        for (int j = 0; j < taille; j++) {
+            int d = sqrt(pow(abs(i - xradius), 2) + pow(abs(j - xradius), 2));
+            if (d < taille) {
+                disk.pixel[i][j] = valeur;
+            }
+        }
+    }
+    return disk;
 }
 
 STREL full(int taille, float valeur)
@@ -1679,10 +1694,10 @@ VOISINAGE voisinage(IMAGE img, int y, int x, STREL strel)
 				continue;
 
 			temp = img.pixel[i][j]; //*strel.pixel[i - x][j - y];
-			
+
 			//if (temp <= 0)
 				//continue;
-			
+
 			v.pixels[v.nb++] = temp;
 		}
 	}
@@ -1712,33 +1727,33 @@ unsigned char medianeVoisinage(VOISINAGE v) {
 
 unsigned char getVal(VOISINAGE v, char* type)
 {
-	unsigned char res = 0;
-	
-	if (v.nb == 0)
-		return 0;
+    unsigned char res = 0;
 
-	else if (type == "min" || type == "MIN") {
-		res = v.pixels[0];
-		for (int i = 1; i < v.nb; i++) {
-			res = MIN(res, v.pixels[i]);
-		}
-	}
-	else if (type == "max" || type == "MAX") {
-		res = v.pixels[0];
-		for (int i = 1; i < v.nb; i++) {
-			res = MAX(res, v.pixels[i]);
-		}
-	}
-	else if (type == "mean" || type == "MEAN" || type == "moyenne" || type == "MOYENNE" || type == "average" || type == "AVERAGE") {
-		for (int i = 0; i < v.nb; i++) {
-			res += v.pixels[i];
-		}
-		res /= v.nb;
-	}
-	else if (type == "median" || type == "Median" || type == "mediane" || type == "Mediane") {
-		res = medianeVoisinage(v);
-	}
-	return res;
+    if (v.nb == 0)
+        return 0;
+
+    else if (strcmp(type, "min") == 0 || strcmp(type, "MIN") == 0) {
+        res = v.pixels[0];
+        for (int i = 1; i < v.nb; i++) {
+            res = MIN(res, v.pixels[i]);
+        }
+    }
+    else if (strcmp(type, "max") == 0 || strcmp(type, "MAX") == 0) {
+        res = v.pixels[0];
+        for (int i = 1; i < v.nb; i++) {
+            res = MAX(res, v.pixels[i]);
+        }
+    }
+    else if (strcmp(type, "mean") == 0 || strcmp(type, "MEAN") == 0 || strcmp(type, "moyenne") == 0 || strcmp(type, "MOYENNE") == 0 || strcmp(type, "average") == 0 || strcmp(type, "AVERAGE") == 0) {
+        for (int i = 0; i < v.nb; i++) {
+            res += v.pixels[i];
+        }
+        res /= v.nb;
+    }
+    else if (strcmp(type, "median") == 0 || strcmp(type, "Median") == 0 || strcmp(type, "mediane") == 0 || strcmp(type, "Mediane") == 0) {
+        res = medianeVoisinage(v);
+    }
+    return res;
 }
 
 float Vinet(IMAGE test, IMAGE refc)
@@ -1809,4 +1824,35 @@ float localIoU(IMAGE test, IMAGE ref, REGION reg)
 	}
 	
 	return (float)intersect / uni;
+}
+
+double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef) {
+    double sum_A = 0, sum_B = 0;
+    double mean_A, mean_B;
+    double numerator = 0, denominator_A = 0, denominator_B = 0;
+    double correlation;
+
+    for (int i = 0; i < img.Nblig; i++) {
+        for (int j = 0; j < img.Nbcol; j++) {
+            sum_A += img.pixel[i][j];
+            sum_B += imgRef.pixel[i][j];
+        }
+    }
+
+    mean_A = sum_A / (img.Nblig * img.Nbcol);
+    mean_B = sum_B / (imgRef.Nblig * imgRef.Nbcol);
+
+    for (int i = 0; i < img.Nblig; i++) {
+        for (int j = 0; j < img.Nbcol; j++) {
+            double diff_A = img.pixel[i][j] - mean_A;
+            double diff_B = imgRef.pixel[i][j] - mean_B;
+
+            numerator += diff_A * diff_B;
+            denominator_A += diff_A * diff_A;
+            denominator_B += diff_B * diff_B;
+        }
+    }
+
+    correlation = numerator / (sqrt(denominator_A) * sqrt(denominator_B));
+    return correlation;
 }
