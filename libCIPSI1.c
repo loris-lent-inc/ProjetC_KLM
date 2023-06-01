@@ -1366,7 +1366,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 
 	for (int i = 1; i < nbComp + 1; i++) {
-		if ([...]) {
+		if ((sign[i].bord > img.Nbcol*0.9) || (sign[i].bord > img.Nblig*0.9)) {
 			LUTBords[i] = 0;
 		}
 	}

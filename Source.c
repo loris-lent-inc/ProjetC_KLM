@@ -70,11 +70,14 @@ void process_images(const char *folder1, const char *folder2, const char *result
 
         STREL strel = disk(3, 1);
 
-        // Morphologique
-        img1 = ouverture(dilatation(img1, strel), strel);
+        // Filtre médian
+        img1 = mediane(img1, strel);
 
-        IMAGE img_black_top_hat = blackTopHat(img1, disk(17, 1));
-        IMAGE img_white_top_hat = whiteTopHat(img1, disk(17, 1));
+        // Morphologique
+        //img1 = ouverture(dilatation(img1, strel), strel);
+
+        IMAGE img_black_top_hat = blackTopHat(img1, disk(9, 1));
+        IMAGE img_white_top_hat = whiteTopHat(img1, disk(9, 1));
 
         double white_cor = correlation_croisee_normalisee(img_white_top_hat, img2);
         double black_cor = correlation_croisee_normalisee(img_black_top_hat, img2);
@@ -116,7 +119,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
         char results[100];
         snprintf(result_filename, maxPathLength, "%s%s", result_folder, fileList->filenames[i]);
         snprintf(results, maxPathLength, "%s%s", "./results/", fileList->filenames[i]);
-        sauvegardeImage(img_otsu, "P5",result_filename);
+        sauvegardeImage(img_tophat, "P5",result_filename);
         sauvegardeImage(img_label, "P5",results);
 
         printf("IoU = %.3f%%, vinet = %.3f%%\n", 100 * result, 100 * vinet);
