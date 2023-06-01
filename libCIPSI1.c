@@ -85,7 +85,6 @@ STREL allocationStrel(int Nblig, int Nbcol)
 		printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de cote impair.\n");
 		return strel;
 	}
-	;
 	int i;
 
 	strel.Nblig = Nblig;
@@ -105,7 +104,6 @@ STREL allocationStrel(int Nblig, int Nbcol)
 		strel.pixel[i] = &strel.data[i * Nbcol];
 
         return(strel);
-    }
 }
 
 void initialisationAleatoireImage(IMAGE img, int ngMin, int ngMax)
@@ -1359,16 +1357,18 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 
 	for (int k = 0; k < img.Nbcol; k++) {
-		LUTBords[img.pixel[k][0]] = 0;
-		LUTBords[img.pixel[k][img.Nbcol-1]] = 0;
-		sign[img.pixel[k][0]].bord = 1;
-		sign[img.pixel[k][img.Nbcol - 1]].bord = 1;
+		sign[img.pixel[k][0]].bord++;
+		sign[img.pixel[k][img.Nbcol - 1]].bord++;
 	}
 	for(int k = 0; k < img.Nblig; k++) {
-		LUTBords[img.pixel[0][k]] = 0;
-		LUTBords[img.pixel[img.Nblig-1][k]] = 0;
-		sign[img.pixel[0][k]].bord = 1;
-		sign[img.pixel[img.Nblig - 1][k]].bord = 1;
+		sign[img.pixel[0][k]].bord++;
+		sign[img.pixel[img.Nblig - 1][k]].bord++;
+	}
+
+	for (int i = 1; i < nbComp + 1; i++) {
+		if ([...]) {
+			LUTBords[i] = 0;
+		}
 	}
 
 	applicateurLUTRef(&img, LUTBords);
