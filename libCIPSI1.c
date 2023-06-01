@@ -80,27 +80,29 @@ IMAGE allocationImage(int Nblig, int Nbcol)
 
 STREL allocationStrel(int Nblig, int Nbcol)
 {
-    if (Nblig % 2 != 1 || Nbcol % 2 != 1) {
-        printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de côté impair.\n");
-    } else {
-        STREL strel;
-        int i;
+	STREL strel = { 0, 0, 0, 0, NULL,NULL };
+	if (!(Nblig % 2) || !(Nbcol % 2)) {
+		printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de cote impair.\n");
+		return strel;
+	}
+	;
+	int i;
 
-        strel.Nblig = Nblig;
-        strel.Nbcol = Nbcol;
-        strel.xradius = (Nblig + 1) / 2;
-        strel.yradius = (Nbcol + 1) / 2;
-        strel.data = (float *) calloc(Nblig * Nbcol, sizeof(float));
-        if (strel.data == NULL)
-            return strel;
-        strel.pixel = (float **) malloc(Nblig * sizeof(float *));
-        if (strel.pixel == NULL) {
-            free(strel.data);
-            strel.data = NULL;
-            return strel;
-        }
-        for (i = 0; i < Nblig; i++)
-            strel.pixel[i] = &strel.data[i * Nbcol];
+	strel.Nblig = Nblig;
+	strel.Nbcol = Nbcol;
+	strel.xradius = 1 + (Nblig >> 1);
+	strel.yradius = 1 + (Nbcol >> 1);
+	strel.data = (float*)calloc(Nblig * Nbcol, sizeof(float));
+	if (strel.data == NULL)
+		return(strel);
+	strel.pixel = (float**)malloc(Nblig * sizeof(float*));
+	if (strel.pixel == NULL) {
+		free(strel.data);
+		strel.data = NULL;
+		return(strel);
+	}
+	for (i = 0; i < Nblig; i++)
+		strel.pixel[i] = &strel.data[i * Nbcol];
 
         return(strel);
     }
@@ -1033,7 +1035,7 @@ IMAGERGB conversionImageFausseCouleur(IMAGE img, char* lutFile){
 
 double distanceEcartTypeImage(IMAGE im1, IMAGE im2)
 {
-	return abs(statistiquesImage(im1).ecartType - statistiquesImage(im2).ecartType);
+	return (double)abs(statistiquesImage(im1).ecartType - statistiquesImage(im2).ecartType);
 }
 
 double distanceHistogrammeImage(IMAGE im1, IMAGE im2){
@@ -1156,7 +1158,6 @@ IMAGE convolution(IMAGE img, STREL strel)
 IMAGE erosion(IMAGE img,  STREL strel)
 {
 	IMAGE erod = allocationImage(img.Nblig, img.Nbcol);
-	VOISINAGE V;
 	
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
@@ -1169,8 +1170,7 @@ IMAGE erosion(IMAGE img,  STREL strel)
 IMAGE dilatation(IMAGE img, STREL strel)
 {
 	IMAGE dilat = allocationImage(img.Nblig, img.Nbcol);
-	VOISINAGE V;
-
+	
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
 			if (img.pixel[i][j] != 0) 
@@ -1181,8 +1181,7 @@ IMAGE dilatation(IMAGE img, STREL strel)
 
 IMAGE mediane(IMAGE img, STREL strel) {
 	IMAGE med = allocationImage(img.Nblig, img.Nbcol);
-	VOISINAGE V;
-
+	
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
 			if (img.pixel[i][j] != 0)
@@ -1241,7 +1240,7 @@ float perimetre(IMAGE img, int sig)
 		if (fnd == 0) return 0;
 		i--;
 		int found = 1;
-		int c_neighbor = 0, min_i, min_j;
+		int c_neighbor = 0;
 		while (found) {
 			found = 0;
 			for (int k = -1; k <= 1; k++) {
@@ -1262,7 +1261,7 @@ float perimetre(IMAGE img, int sig)
 				}
 			}
 		}
-		return cnt1 + 1.4142 * cnt2;
+		return cnt1 + 1.4142f * cnt2;
 	//}
 
 }
@@ -1372,7 +1371,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 		sign[img.pixel[img.Nblig - 1][k]].bord = 1;
 	}
 
-	//applicateurLUTRef(&img, LUTBords);
+	applicateurLUTRef(&img, LUTBords);
 	//sauvegardeImageRGB(conversionImageFausseCouleur(img, "data/ipsi.txt"), "P6", "test/img.ppm");
 
 	return sign;
@@ -1401,7 +1400,7 @@ void sauvegardeSignaturesImage(SIGNATURE_COMPOSANTE_CONNEXE* sig, int nbComp, co
 	F = fopen(fichier, "w");
 
 	for (int i = 0; i < nbComp; i++)
-		fprintf(F, "%d ; %d ; %d ; %d ; %d ; %d ;\n", sig[i].perimetre, sig[i].surface, sig[i].rayon, sig[i].compacite, sig[i].CG.x, sig[i].CG.y);
+		fprintf(F, "%lf; %d ; %lf ; %lf ; %lf ; %lf ;\n", sig[i].perimetre, sig[i].surface, sig[i].rayon, sig[i].compacite, sig[i].CG.x, sig[i].CG.y);
 
 
 	fclose(F);
@@ -1545,6 +1544,8 @@ POINT* imageVersPoints(IMAGE img, int* n, char axe)
 		}
 	}
 	pts = (POINT*)realloc(pts, (*n) * sizeof(POINT));
+
+	return pts;
 }
 
 void regression(POINT* tab, int n, float* a, float* b)
@@ -1596,7 +1597,7 @@ IMAGE imageSortieRegression(IMAGE img, char axe)
 IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
     IMAGE diff = allocationImage(i1.Nblig, i1.Nbcol);	// Image de differenciation
     unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
-    for(unsigned int i = 0; i < i1.Nbcol * i1.Nblig; i++)
+    for(int i = 0; i < i1.Nbcol * i1.Nblig; i++)
 	{
 
 		if (i1.data[i] == i2.data[i])		// pixels identiques -> 0 dans diff
@@ -1804,11 +1805,9 @@ float Vinet(IMAGE test, IMAGE refc)
 
 float localIoU(IMAGE test, IMAGE ref, REGION reg)
 {
-	IMAGE diff = allocationImage(reg.height, reg.width);	// Image de differenciation
 	unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
-	for (unsigned int i = reg.x; i < reg.x+reg.width; i++)
-	{
-		for (unsigned int j = reg.y; j < reg.y + reg.height; j++) {
+	for (int i = reg.x; i < reg.x+reg.width; i++){
+		for (int j = reg.y; j < reg.y + reg.height; j++) {
 			int index = j * test.Nbcol + i;
 
 			/*if (test.data[index] == ref.data[index])		// pixels identiques -> 0 dans diff
