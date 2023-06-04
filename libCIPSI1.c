@@ -86,8 +86,8 @@ STREL allocationStrel(int Nblig, int Nbcol)
     }
 
     STREL strel = {0, 0, 0, 0, NULL, NULL};
-    int midNblig = Nblig / 2;
-    int midNbcol = Nbcol / 2;
+    int midNblig = Nblig >> 1;
+    int midNbcol = Nbcol >> 1;
 
     strel.Nblig = Nblig;
     strel.Nbcol = Nbcol;
@@ -1206,7 +1206,7 @@ IMAGE dilatation(IMAGE img, STREL strel)
 
 IMAGE mediane(IMAGE img, STREL strel) {
 	IMAGE med = allocationImage(img.Nblig, img.Nbcol);
-	
+
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
 			if (img.pixel[i][j] != 0)
@@ -1644,30 +1644,32 @@ IMAGE IoU(IMAGE i1, IMAGE i2, float *IoU, float *GlobalDelta){
 
 STREL diamond(int taille, float valeur)
 {
-	STREL diamond = allocationStrel(taille, taille);
-	int mid = taille >> 1 ;
-	for (int i = 0; i < taille; i++) {
-		for (int j = 0; j < taille; j++) {
-			int d = abs(i - mid) + abs(j - mid);
-			if (d < diamond.xradius) {
-				diamond.pixel[i][j] = valeur;
-			}
-		}
-	}
-	return diamond;
-}
-
-STREL disk(int taille, float valeur)
-{
-    STREL disk = allocationStrel(taille,taille);
-    int mid = taille / 2;
-
+    STREL diamond = allocationStrel(taille,taille);
+    int mid = taille >> 1;
     for (int i = 0; i < taille; i++) {
         for (int j = 0; j < taille; j++) {
             int dx = j - mid;
             int dy = i - mid;
-            int d = dx * dx + dy * dy;
-            if (d <= mid * mid) {
+            if (dx < 0) dx = -dx;
+            if (dy < 0) dy = -dy;
+            if (dx + dy <= mid) {
+                diamond.pixel[i][j] = valeur;
+            }
+        }
+    }
+    return diamond;
+}
+
+STREL disk(int taille, float valeur)
+{
+    STREL disk = allocationStrel(taille, taille);
+    int mid = taille >> 1;
+    for (int i = 0; i < taille; i++) {
+        for (int j = 0; j < taille; j++) {
+            int dx = j - mid;
+            int dy = i - mid;
+            float distance = sqrt(dx*dx + dy*dy);
+            if (distance <= mid + 0.5) {
                 disk.pixel[i][j] = valeur;
             }
         }
@@ -1677,12 +1679,14 @@ STREL disk(int taille, float valeur)
 
 STREL full(int taille, float valeur)
 {
-	STREL full = allocationStrel(taille, taille);
-	for (int i = 0; i < 3; i++)
-		for (int j = 0; j < 3; j++)
-			full.pixel[i][j] = valeur;
+    STREL full = allocationStrel(taille, taille);
 
-	return full;
+    for (int i = 0; i < taille; i++) {
+        for (int j = 0; j < taille; j++) {
+            full.pixel[i][j] = valeur;
+        }
+    }
+    return full;
 }
 
 STREL V4()

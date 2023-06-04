@@ -70,8 +70,10 @@ void process_images(const char *folder1, const char *folder2, const char *result
         IMAGE img1 = lectureImage(path1);
         IMAGE img2 = lectureImage(path2);
 
-        IMAGE img_black_top_hat = blackTopHat(img1, disk(3, 1));
-        IMAGE img_white_top_hat = whiteTopHat(img1, disk(3, 1));
+        STREL strel = disk(3, 1);
+
+        IMAGE img_black_top_hat = blackTopHat(img1, strel);
+        IMAGE img_white_top_hat = whiteTopHat(img1, strel);
 
         double white_cor = correlation_croisee_normalisee(img_white_top_hat, img2);
         double black_cor = correlation_croisee_normalisee(img_black_top_hat, img2);
@@ -117,6 +119,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
         snprintf(results, maxPathLength, "%s%s", "./results/", fileList->filenames[i]);
         sauvegardeImage(img_label, "P5",result_filename);
         sauvegardeImage(img_tophat, "P5",results);
+        sauvegerdeSTREL(disk(9, 255), "./strel.pgm");
 
         printf("IoU = %.3f%%, vinet = %.3f%%\n", 100 * iou, 100 * vinet);
 
