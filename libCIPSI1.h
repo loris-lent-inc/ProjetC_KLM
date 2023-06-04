@@ -76,6 +76,8 @@ typedef struct voisinage {
 typedef struct {
     char **filenames;
     int count;
+    int countIN;
+    int countSc;
 } FileList;
 
 int randInt(int min, int max);
@@ -93,6 +95,8 @@ void initialisationAleatoireImage(IMAGE img, int ngMin, int ngMax);
 
 void sauvegardeImage(IMAGE img, const char *type, const char *out);
 void liberationImage(IMAGE *im);
+
+void sauvegerdeSTREL(STREL strel, const char *out);
 
 IMAGE lectureImage(const char *nom);
 
@@ -151,10 +155,9 @@ IMAGE difference(IMAGE img1, IMAGE img2);
 inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(img, dilatation(erosion(img, strel), strel)), 0, 300), V8()); }
 inline IMAGE blackTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(erosion(dilatation(img, strel), strel), img), 0, 300), V8()); }
 
-
 float perimetre(IMAGE img, int sig);
 
-void rechercheImageProche(int indexIm, char** titles, int nbi, int* indexMinET, int* indexMinHS, int* minET, int* minHS);
+void rechercheImageProche(int indexIm, char** titles, int nbi, int* indexM11inET, int* indexMinHS, int* minET, int* minHS);
 
 IMAGE applicateurLUTVal(IMAGE img, int* LUT);
 void applicateurLUTRef(IMAGE* img, int* LUT);
@@ -199,3 +202,4 @@ VOISINAGE voisinage(IMAGE img, int x, int y, STREL strel);
 unsigned char getVal(VOISINAGE v, char* type);
 
 double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef);
+double calculateSSIM(IMAGE img1, IMAGE img2);

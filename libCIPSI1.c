@@ -80,30 +80,57 @@ IMAGE allocationImage(int Nblig, int Nbcol)
 
 STREL allocationStrel(int Nblig, int Nbcol)
 {
-	STREL strel = { 0, 0, 0, 0, NULL,NULL };
-	if (!(Nblig % 2) || !(Nbcol % 2)) {
-		printf("Taille d'élément structurant invalide: il doit s'agir d'un rectangle de cote impair.\n");
-		return strel;
-	}
-	int i;
+    if (Nblig % 2 == 0 || Nbcol % 2 == 0) {
+        printf("Taille d'élément structurant invalide : elle doit être impaire.\n");
+        return (STREL){0, 0, 0, 0, NULL, NULL};
+    }
 
-	strel.Nblig = Nblig;
-	strel.Nbcol = Nbcol;
-	strel.xradius = 1 + (Nblig >> 1);
-	strel.yradius = 1 + (Nbcol >> 1);
-	strel.data = (float*)calloc(Nblig * Nbcol, sizeof(float));
-	if (strel.data == NULL)
-		return(strel);
-	strel.pixel = (float**)malloc(Nblig * sizeof(float*));
-	if (strel.pixel == NULL) {
-		free(strel.data);
-		strel.data = NULL;
-		return(strel);
-	}
-	for (i = 0; i < Nblig; i++)
-		strel.pixel[i] = &strel.data[i * Nbcol];
+    STREL strel = {0, 0, 0, 0, NULL, NULL};
+    int midNblig = Nblig / 2;
+    int midNbcol = Nbcol / 2;
 
-        return(strel);
+    strel.Nblig = Nblig;
+    strel.Nbcol = Nbcol;
+    strel.xradius = midNblig;
+    strel.yradius = midNbcol;
+    strel.data = (float*)calloc(Nblig * Nbcol, sizeof(float));
+    if (strel.data == NULL)
+        return strel;
+    strel.pixel = (float**)malloc(Nblig * sizeof(float*));
+    if (strel.pixel == NULL) {
+        free(strel.data);
+        strel.data = NULL;
+        return strel;
+    }
+    for (int i = 0; i < Nblig; i++)
+        strel.pixel[i] = &strel.data[i * Nbcol];
+
+    return strel;
+}
+
+
+void sauvegerdeSTREL(STREL strel, const char *out)
+{
+    FILE *F = NULL;
+    int i, j;
+
+    if ((F = fopen(out, "w")) == NULL)
+    {
+        printf("Pb image inexistante");
+    }
+    else
+    {
+        fprintf(F, "P2\n");
+        fprintf(F, "%d %d\n", strel.Nblig, strel.Nbcol);
+        fprintf(F, "255\n");
+        for (i = 0; i<strel.Nblig; i++)
+        {
+            for (j = 0; j<strel.Nbcol; j++)
+                fprintf(F, "%d ", (int)strel.pixel[i][j]);
+            fprintf(F, "\n");
+        }
+        fclose(F);
+    }
 }
 
 void initialisationAleatoireImage(IMAGE img, int ngMin, int ngMax)
@@ -1156,7 +1183,7 @@ IMAGE convolution(IMAGE img, STREL strel)
 IMAGE erosion(IMAGE img,  STREL strel)
 {
 	IMAGE erod = allocationImage(img.Nblig, img.Nbcol);
-	
+
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
 			if (img.pixel[i][j] != 0)
@@ -1366,7 +1393,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 
 	for (int i = 1; i < nbComp + 1; i++) {
-		if ((sign[i].bord > img.Nbcol*0.9) || (sign[i].bord > img.Nblig*0.9)) {
+		if ((sign[i].bord > img.Nbcol*0.8) || (sign[i].bord > img.Nblig*0.8)) {
 			LUTBords[i] = 0;
 		}
 	}
@@ -1632,12 +1659,15 @@ STREL diamond(int taille, float valeur)
 
 STREL disk(int taille, float valeur)
 {
-    STREL disk = allocationStrel(taille, taille);
-    int xradius = taille >> 1;
+    STREL disk = allocationStrel(taille,taille);
+    int mid = taille / 2;
+
     for (int i = 0; i < taille; i++) {
         for (int j = 0; j < taille; j++) {
-            int d = sqrt(pow(abs(i - xradius), 2) + pow(abs(j - xradius), 2));
-            if (d < taille) {
+            int dx = j - mid;
+            int dy = i - mid;
+            int d = dx * dx + dy * dy;
+            if (d <= mid * mid) {
                 disk.pixel[i][j] = valeur;
             }
         }
@@ -1799,30 +1829,36 @@ float Vinet(IMAGE test, IMAGE refc)
 		}
 	}
 
-	score /= totalArea;
+    if (totalArea != 0) {
+        score /= totalArea;
+    } else {
+        score = 0;
+    }
+
 	return score;
 }
 
 float localIoU(IMAGE test, IMAGE ref, REGION reg)
 {
-	unsigned int intersect = 0, uni = 0;	// nombre de pixels dans l'intersection et l'union
-	for (int i = reg.x; i < reg.x+reg.width; i++){
-		for (int j = reg.y; j < reg.y + reg.height; j++) {
-			int index = j * test.Nbcol + i;
+	int minX = MAX(reg.x, 0);
+    int minY = MAX(reg.y, 0);
+    int maxX = MIN(reg.x + reg.width, test.Nbcol);
+    int maxY = MIN(reg.y + reg.height, test.Nblig);
 
-			/*if (test.data[index] == ref.data[index])		// pixels identiques -> 0 dans diff
-				diff.data[index] = 0;
-			else								// pixels differents -> 1 dans diff
-				diff.data[index] = 255;*/
+    int intersection = 0;
+    int unionArea = 0;
 
-			if ((test.pixel[j][i] != 0) || (ref.pixel[j][i] != 0))
-				uni++;										// Si une des images a un defaut
-			if ((test.pixel[j][i] != 0) && (ref.pixel[j][i] != 0))
-				intersect++;								// Si les deux images ont un defaut
-		}
-	}
-	
-	return (float)intersect / uni;
+    for (int i = minX; i < maxX; i++) {
+        for (int j = minY; j < maxY; j++) {
+            if (test.pixel[j][i] != 0 && ref.pixel[j][i] != 0) {
+                intersection++;
+            }
+            if (test.pixel[j][i] != 0 || ref.pixel[j][i] != 0) {
+                unionArea++;
+            }
+        }
+    }
+    return (float)intersection / unionArea;
 }
 
 double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef) {
@@ -1854,4 +1890,43 @@ double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef) {
 
     correlation = numerator / (sqrt(denominator_A) * sqrt(denominator_B));
     return correlation;
+}
+
+double calculateSSIM(IMAGE img1, IMAGE img2)
+{
+    double c1 = 0.01 * 255 * 0.01 * 255;
+    double c2 = 0.03 * 255 * 0.03 * 255;
+
+    double meanImg1 = 0.0;
+    double meanImg2 = 0.0;
+    double varImg1 = 0.0;
+    double varImg2 = 0.0;
+    double covar = 0.0;
+
+    for (int y = 0; y < img1.Nblig; y++)
+    {
+        for (int x = 0; x < img1.Nbcol; x++)
+        {
+            double pixelImg1 = img1.pixel[y][x];
+            double pixelImg2 = img2.pixel[y][x];
+
+            meanImg1 += pixelImg1;
+            meanImg2 += pixelImg2;
+
+            varImg1 += pixelImg1 * pixelImg1;
+            varImg2 += pixelImg2 * pixelImg2;
+            covar += pixelImg1 * pixelImg2;
+        }
+    }
+
+    meanImg1 /= (img1.Nblig * img1.Nbcol);
+    meanImg2 /= (img1.Nblig * img1.Nbcol);
+
+    varImg1 = (varImg1 / (img1.Nblig * img1.Nbcol)) - (meanImg1 * meanImg1);
+    varImg2 = (varImg2 / (img1.Nblig * img1.Nbcol)) - (meanImg2 * meanImg2);
+    covar = (covar / (img1.Nblig * img1.Nbcol)) - (meanImg1 * meanImg2);
+
+    double ssim = ((2 * meanImg1 * meanImg2 + c1) * (2 * covar + c2)) / ((meanImg1 * meanImg1 + meanImg2 * meanImg2 + c1) * (varImg1 + varImg2 + c2));
+
+    return ssim;
 }
