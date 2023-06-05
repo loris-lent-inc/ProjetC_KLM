@@ -152,8 +152,8 @@ IMAGE mediane(IMAGE img, STREL strel);
 inline IMAGE fermeture(IMAGE img, STREL strel){ return erosion(dilatation(img, strel), strel); }
 inline IMAGE ouverture(IMAGE img, STREL strel){ return dilatation(erosion(img, strel), strel); }
 IMAGE difference(IMAGE img1, IMAGE img2);
-inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(img, dilatation(erosion(img, strel), strel)), 0, 300), V8()); }
-inline IMAGE blackTopHat(IMAGE img, STREL strel) { return convolution(expansionImage(difference(erosion(dilatation(img, strel), strel), img), 0, 300), V8()); }
+inline IMAGE whiteTopHat(IMAGE img, STREL strel) { return convolution(difference(img, dilatation(erosion(img, strel), strel)), V8()); }
+inline IMAGE blackTopHat(IMAGE img, STREL strel) { return convolution(difference(erosion(dilatation(img, strel), strel), img), V8()); }
 
 float perimetre(IMAGE img, int sig);
 

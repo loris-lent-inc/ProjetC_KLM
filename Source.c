@@ -70,9 +70,9 @@ void process_images(const char *folder1, const char *folder2, const char *result
         IMAGE img1 = lectureImage(path1);
         IMAGE img2 = lectureImage(path2);
 
-        STREL strel = disk(3, 1);
+        STREL strel = disk(17, 1);
 
-        IMAGE img_black_top_hat = blackTopHat(img1, strel);
+        IMAGE img_black_top_hat = blackTopHat(mediane(img1, disk(7,1)), strel);
         IMAGE img_white_top_hat = whiteTopHat(img1, strel);
 
         double white_cor = correlation_croisee_normalisee(img_white_top_hat, img2);
@@ -82,6 +82,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
 
         if (white_cor > black_cor) {
             img_tophat = img_white_top_hat;
+            img_tophat = dilatation(img_tophat, disk(5, 1));
             printf("White top hat\n");
         }else {
             img_tophat = img_black_top_hat;
@@ -91,7 +92,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
         // Seuillage Ostu
         IMAGE img_otsu = seuillageOtsu(img_tophat);
 
-        //labelisation
+        // Labelisation
         int nb_labels = 0;
         IMAGE img_label = labelImage(img_otsu, &nb_labels);
 
@@ -102,13 +103,12 @@ void process_images(const char *folder1, const char *folder2, const char *result
             if ((signatures[k].surface < 23)) {
                 //printf("Suppression composante %d\n", k);
                 img_label = supprimerComposanteConnexe(img_label, k);
+                nb_labels--;
             }
         }
         free(signatures);
 
         img_label = labelToBinary(img_label, nb_labels);
-
-        //morphologie
 
         IoU(img_label, img2, &iou, &GD);
         float vinet = Vinet(img_label, img2);
@@ -140,6 +140,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
         free(path1);
         free(path2);
         free(result_path);
+
     }
     float avg_iou = total_iou / (float)fileList->count;
     float avg_iou_In = total_iou_In / (float)fileList->countIN;

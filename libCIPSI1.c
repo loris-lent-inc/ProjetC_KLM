@@ -1195,10 +1195,10 @@ IMAGE erosion(IMAGE img,  STREL strel)
 IMAGE dilatation(IMAGE img, STREL strel)
 {
 	IMAGE dilat = allocationImage(img.Nblig, img.Nbcol);
-	
+
 	for (int i = 0; i < img.Nblig; i++)
 		for (int j = 0; j < img.Nbcol; j++)
-			if (img.pixel[i][j] != 0) 
+			if (img.pixel[i][j] != 0)
 				dilat.pixel[i][j] = getVal(voisinage(img, i, j, strel), "max");
 
 	return dilat;
@@ -1347,6 +1347,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 		sign[i].region.y = img.Nbcol;
 		sign[i].region.width = 0;
 		sign[i].region.height = 0;
+        sign[i].compacite = 0;
 	}
 	int max = 0;
 	
@@ -1393,7 +1394,7 @@ SIGNATURE_COMPOSANTE_CONNEXE* signaturesImage(IMAGE img, int nbComp) {
 	}
 
 	for (int i = 1; i < nbComp + 1; i++) {
-		if ((sign[i].bord > img.Nbcol*0.8) || (sign[i].bord > img.Nblig*0.8)) {
+		if ((sign[i].bord > img.Nbcol*0.9) || (sign[i].bord > img.Nblig*0.9)) {
 			LUTBords[i] = 0;
 		}
 	}
@@ -1663,13 +1664,11 @@ STREL diamond(int taille, float valeur)
 STREL disk(int taille, float valeur)
 {
     STREL disk = allocationStrel(taille, taille);
-    int mid = taille >> 1;
+    int xradius = taille >> 1;
     for (int i = 0; i < taille; i++) {
         for (int j = 0; j < taille; j++) {
-            int dx = j - mid;
-            int dy = i - mid;
-            float distance = sqrt(dx*dx + dy*dy);
-            if (distance <= mid + 0.5) {
+            int d = sqrt(pow(abs(i - xradius), 2) + pow(abs(j - xradius), 2));
+            if (d < taille) {
                 disk.pixel[i][j] = valeur;
             }
         }
@@ -1753,11 +1752,11 @@ void sort(VOISINAGE* v) {
 }
 
 unsigned char medianeVoisinage(VOISINAGE v) {
-	sort(&v);
-	if (v.nb % 2 == 0)
-		return (v.pixels[v.nb / 2] + v.pixels[v.nb / 2 + 1]) / 2;
-	else
-		return v.pixels[v.nb / 2 + 1];
+    sort(&v);
+    if (v.nb % 2 == 0)
+        return (v.pixels[(v.nb - 1) / 2] + v.pixels[(v.nb - 1) / 2 + 1]) / 2;
+    else
+        return v.pixels[(v.nb - 1) / 2];
 }
 
 unsigned char getVal(VOISINAGE v, char* type)
