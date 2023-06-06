@@ -184,7 +184,7 @@ inline char belongTo(POINT p, REGION reg) {
 
 // Fonction de notation de resultat
 // retourne une image avec les différences et 2 mesures de ressemblance (une locale, une globale)
-IMAGE IoU(IMAGE i1, IMAGE i2, float* IoU, float* GlobalDelta);
+float IoU(IMAGE i1, IMAGE i2);
 
 float localIoU(IMAGE test, IMAGE ref, REGION reg);
 void sort(VOISINAGE* v);
@@ -203,3 +203,12 @@ unsigned char getVal(VOISINAGE v, char* type);
 
 double correlation_croisee_normalisee(IMAGE img, IMAGE imgRef);
 double calculateSSIM(IMAGE img1, IMAGE img2);
+
+//
+void readFilenames(const char* filename, FileList* fileList);
+void freeFileList(FileList* fileList);
+void process_images(const char* folder1, const char* folder2, const char* result_folder, FileList* fileList);
+IMAGE traitement_image(IMAGE img1, IMAGE img2, float* iou, float* vinet);
+
+//
+void menu();
