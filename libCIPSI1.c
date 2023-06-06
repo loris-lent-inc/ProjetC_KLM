@@ -1803,7 +1803,7 @@ float Vinet(IMAGE test, IMAGE refc)
 	float totalArea = 0;
 	float score = 0;
 
-	for (int i = 1; i < nm; i++) {
+	for (int i = 0; i < nm; i++) {
 		SIGNATURE_COMPOSANTE_CONNEXE* bestchoice = &(sr[1]);
 		float minDis = distanceSQ(st[i].CG, bestchoice->CG);
 
@@ -1830,7 +1830,7 @@ float Vinet(IMAGE test, IMAGE refc)
 	}
 	else if (nt > nr) {
 		for (int i = nr; i < nt; i++) {
-			totalArea += st[i].region.height * st[i].region.width;
+			//totalArea += st[i].region.height * st[i].region.width;
 		}
 	}
 
