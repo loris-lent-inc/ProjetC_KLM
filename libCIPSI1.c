@@ -2107,10 +2107,11 @@ IMAGE traitement_image(IMAGE img1, IMAGE img2, float* iou, float *vinet) {
 }
 
 void menu() {
-	char choix1=0, choix2=0;
+	char choix1=0;
+	int choix2 = 0, choix3 = -1;
 	printf("Traitement general [0], ou d'une image [1] : \n");
-	scanf("%c", &choix1);
-	
+	do { scanf("%c", &choix1); } while (choix1 == '\n');
+
 	const char* folder1 = "./Source_Images/";
 	const char* folder2 = "./Ground_truth/";
 	const char* result_folder = "./results/test/";
@@ -2135,12 +2136,16 @@ void menu() {
 		break;
 
 	case '1':
-		printf("Quelle image traiter ? \n");
-		do { scanf("%c", &choix2); } 
-		while (choix2 == '\n');
+		printf("Image In [0] ou Sc [1] ? \n");
+		do { scanf("%i", &choix2); } 
+		while (choix2 !=0 && choix2!=1);
 
-		snprintf(path1, maxPathLength, "%s%s", folder1, fileList.filenames[choix2]);
-		snprintf(path2, maxPathLength, "%s%s", folder2, fileList.filenames[choix2]);
+		printf("Quelle image ? \n");
+		do { scanf("%i", &choix3); } while (choix3 > 300 || choix3 < 0);
+
+		int img = choix3 + (choix2 * 300 - 1);
+		snprintf(path1, maxPathLength, "%s%s", folder1, fileList.filenames[img]);
+		snprintf(path2, maxPathLength, "%s%s", folder2, fileList.filenames[img]);
 
 		IMAGE img1 = lectureImage(path1);
 		IMAGE img2 = lectureImage(path2);
