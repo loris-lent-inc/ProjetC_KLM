@@ -72,7 +72,7 @@ void process_images(const char *folder1, const char *folder2, const char *result
 
         STREL strel = disk(17, 1);
 
-        IMAGE img_black_top_hat = blackTopHat(mediane(img1, disk(7,1)), strel);
+        IMAGE img_black_top_hat = blackTopHat(mediane(img1, disk(11,1)), strel);
         IMAGE img_white_top_hat = whiteTopHat(img1, strel);
 
         double white_cor = correlation_croisee_normalisee(img_white_top_hat, img2);

@@ -1664,11 +1664,13 @@ STREL diamond(int taille, float valeur)
 STREL disk(int taille, float valeur)
 {
     STREL disk = allocationStrel(taille, taille);
-    int xradius = taille >> 1;
+    int mid = taille >> 1;
     for (int i = 0; i < taille; i++) {
         for (int j = 0; j < taille; j++) {
-            int d = sqrt(pow(abs(i - xradius), 2) + pow(abs(j - xradius), 2));
-            if (d < taille) {
+            int dx = j - mid;
+            int dy = i - mid;
+            float distance = sqrt(dx*dx + dy*dy);
+            if (distance <= mid + 0.5) {
                 disk.pixel[i][j] = valeur;
             }
         }
