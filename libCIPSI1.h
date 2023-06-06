@@ -6,6 +6,8 @@
 
 #define MAX(a, b) a > b ? a : b
 #define MIN(a, b) a > b ? b : a
+#define maxPathLength 100
+
 //#define V4 diamond(3)
 //#define V8 full(3, 1.0f/9)
 

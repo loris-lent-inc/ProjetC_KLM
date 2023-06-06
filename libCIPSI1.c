@@ -1986,7 +1986,6 @@ void freeFileList(FileList* fileList) {
 }
 
 void process_images(const char* folder1, const char* folder2, const char* result_folder, FileList* fileList) {
-	const int maxPathLength = 100;
 	float total_iou = 0;
 	float total_iou_In = 0;
 	float total_iou_Sc = 0;
@@ -2108,16 +2107,50 @@ IMAGE traitement_image(IMAGE img1, IMAGE img2, float* iou, float *vinet) {
 }
 
 void menu() {
-	char choix;
-	printf("Traitement general [0], ou d'une image[1] : \n");
-	scanf("%c", &choix);
+	char choix1=0, choix2=0;
+	printf("Traitement general [0], ou d'une image [1] : \n");
+	scanf("%c", &choix1);
+	
+	const char* folder1 = "./Source_Images/";
+	const char* folder2 = "./Ground_truth/";
+	const char* result_folder = "./results/test/";
+	const char* filename = "file_list.txt";
 
-	switch (choix) {
+	char* path1 = malloc(maxPathLength * sizeof(char));
+	char* path2 = malloc(maxPathLength * sizeof(char));
+	char* result_path = malloc(maxPathLength * sizeof(char));
+
+	FileList fileList;
+	readFilenames(filename, &fileList);
+
+	float iou, vinet;
+		
+	switch (choix1) {
 	case '0':
+		fileList.count = 0;
+		fileList.countIN = 0;
+		fileList.countSc = 0;
+		process_images(folder1, folder2, result_folder, &fileList);
+		
 		break;
+
 	case '1':
+		printf("Quelle image traiter ? \n");
+		do { scanf("%c", &choix2); } 
+		while (choix2 == '\n');
+
+		snprintf(path1, maxPathLength, "%s%s", folder1, fileList.filenames[choix2]);
+		snprintf(path2, maxPathLength, "%s%s", folder2, fileList.filenames[choix2]);
+
+		IMAGE img1 = lectureImage(path1);
+		IMAGE img2 = lectureImage(path2);
+
+		traitement_image(img1, img2, &iou, &vinet);
 		break;
+
 	default:
+		menu();
 		break;
 	}
+	freeFileList(&fileList);
 }
